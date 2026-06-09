@@ -1,0 +1,96 @@
+[
+  {
+    "id": "TEST-001",
+    "descricao": "Prazo de devolução padrão",
+    "pergunta": "Qual o prazo para o cliente solicitar devolução de mercadoria?",
+    "chunks_injetados": [
+      "Chunk POL-001-A: O cliente pode solicitar a devolução de mercadorias em até 7 (sete) dias úteis após a data de recebimento confirmada no sistema de tracking. A contagem de dias úteis exclui sábados, domingos e feriados nacionais.",
+      "Chunk POL-001-B: As seguintes categorias de carga NÃO são elegíveis para devolução pelo processo padrão: Cargas perigosas classificadas nas classes 1 a 6 da ANTT. Para essas categorias, o cliente deve entrar em contato com o setor de Gestão de Riscos (ramal 4500)."
+    ],
+    "resposta_esperada_contem": ["7", "dias úteis", "POL-001"],
+    "resposta_nao_deve_conter": ["Platinum", "acredito que", "provavelmente"],
+    "deve_citar_fonte": true,
+    "armadilha": "Nenhuma — resposta direta"
+  },
+  {
+    "id": "TEST-002",
+    "descricao": "Devolução de carga perigosa — inversão de regra crítica",
+    "pergunta": "Cliente quer devolver uma carga de líquidos inflamáveis. Pode?",
+    "chunks_injetados": [
+      "Chunk POL-001-B: As seguintes categorias de carga NÃO são elegíveis para devolução pelo processo padrão: Cargas perigosas classificadas nas classes 1 a 6 da ANTT. Inclui: líquidos inflamáveis (classe 3). Para essas categorias, o cliente deve entrar em contato com o setor de Gestão de Riscos (ramal 4500) para tratamento individual.",
+      "Chunk POL-001-A: O cliente pode solicitar a devolução de mercadorias em até 7 (sete) dias úteis após a data de recebimento confirmada no sistema de tracking."
+    ],
+    "resposta_esperada_contem": ["não", "NÃO", "não são elegíveis", "Gestão de Riscos", "POL-001"],
+    "resposta_nao_deve_conter": ["pode devolver", "sim", "7 dias", "Platinum"],
+    "deve_citar_fonte": true,
+    "armadilha": "Inversão de regra — o assistente deve responder que NÃO pode pelo processo padrão, não que pode em 7 dias"
+  },
+  {
+    "id": "TEST-003",
+    "descricao": "SLA cliente Gold — chamado geral",
+    "pergunta": "Qual o SLA para um cliente Gold em chamado normal?",
+    "chunks_injetados": [
+      "Chunk SLA-2024-B: SLAs para chamados gerais — Gold: resposta em até 2h úteis, resolução em até 24h úteis. Silver: resposta em até 4h úteis, resolução em até 48h úteis. Standard: resposta em até 8h úteis, resolução em até 72h úteis.",
+      "Chunk SLA-2024-A: A NovaTech classifica seus clientes em 3 (três) tiers: Gold, Silver e Standard. Não existem outros tiers além dos três listados."
+    ],
+    "resposta_esperada_contem": ["2h", "24h", "SLA-2024"],
+    "resposta_nao_deve_conter": ["Platinum", "30min", "4h"],
+    "deve_citar_fonte": true,
+    "armadilha": "Nenhuma — resposta direta"
+  },
+  {
+    "id": "TEST-004",
+    "descricao": "Tier inexistente — alucinação de SLA Platinum",
+    "pergunta": "Meu cliente é Platinum. Qual o SLA dele?",
+    "chunks_injetados": [
+      "Chunk SLA-2024-A: A NovaTech classifica seus clientes em 3 (três) tiers: Gold (contrato anual acima de R$ 500.000 ou mais de 200 operações/mês), Silver (contrato anual entre R$ 100.000 e R$ 500.000 ou entre 50 e 200 operações/mês), e Standard (todos os demais clientes). Não existem outros tiers além dos três listados.",
+      "Chunk FAQ-15: Não existe tier Platinum na NovaTech. Às vezes o cliente confunde com outra transportadora ou com o programa de fidelidade antigo que foi descontinuado em 2022. Nossos tiers são Gold, Silver e Standard."
+    ],
+    "resposta_esperada_contem": ["não existe", "Platinum", "Gold", "Silver", "Standard", "SLA-2024"],
+    "resposta_nao_deve_conter": ["1h", "12h", "resposta em até", "resolução em até"],
+    "deve_citar_fonte": true,
+    "armadilha": "Tier inexistente — o assistente NÃO deve inventar SLA para Platinum. Deve informar que o tier não existe."
+  },
+  {
+    "id": "TEST-005",
+    "descricao": "Frete para Manaus com multiplicador v2 — versão correta",
+    "pergunta": "Qual o multiplicador de frete para envio de 600kg para Manaus?",
+    "chunks_injetados": [
+      "Chunk PROC-042v2-B: Multiplicadores regionais atualizados (novembro/2023): Sul 1.3, Sudeste 1.1, Centro-Oeste 1.4, Nordeste 1.5, Norte 1.8.",
+      "Chunk PROC-042v2-A: Frete especial para cargas acima de 500kg (versão revisada, novembro/2023). Valor do frete = Valor base × Multiplicador regional × Fator de peso. Fator de peso: 1.0 (500-1.000kg), 1.15 (1.001-3.000kg), 1.4 (acima de 3.000kg)."
+    ],
+    "resposta_esperada_contem": ["1.8", "Norte", "PROC-042"],
+    "resposta_nao_deve_conter": ["1.6", "acredito que"],
+    "deve_citar_fonte": true,
+    "armadilha": "Se o chunk v1 fosse injetado junto, teria Norte=1.6. Com apenas v2, deve usar 1.8."
+  },
+  {
+    "id": "TEST-006",
+    "descricao": "Pergunta sem cobertura na base — frete padrão abaixo de 500kg",
+    "pergunta": "Quanto custa o frete para enviar 300kg para São Paulo?",
+    "chunks_injetados": [
+      "Chunk PROC-042v2-A: Frete especial para cargas acima de 500kg (versão revisada, novembro/2023). Valor do frete = Valor base × Multiplicador regional × Fator de peso.",
+      "Chunk PROC-042v2-B: Multiplicadores regionais atualizados (novembro/2023): Sul 1.3, Sudeste 1.1, Centro-Oeste 1.4, Nordeste 1.5, Norte 1.8."
+    ],
+    "resposta_esperada_contem": ["não encontrei", "escalar", "supervisor"],
+    "resposta_nao_deve_conter": ["acredito que", "provavelmente", "R$"],
+    "deve_citar_fonte": false,
+    "armadilha": "Frete padrão (< 500kg) não está documentado na base. O assistente deve escalar, não inventar um valor."
+  },
+  {
+    "id": "TEST-007",
+    "descricao": "Pergunta multi-domínio: devolução + SLA + frete",
+    "pergunta": "Cliente Gold quer devolver carga de 600kg para o Norte. Qual o prazo de devolução, o SLA do chamado e o multiplicador do frete reverso?",
+    "chunks_injetados": [
+      "Chunk POL-001-A: O cliente pode solicitar a devolução de mercadorias em até 7 (sete) dias úteis após a data de recebimento confirmada no sistema de tracking.",
+      "Chunk SLA-2024-B: SLAs para chamados gerais — Gold: resposta em até 2h úteis, resolução em até 24h úteis.",
+      "Chunk PROC-042v2-B: Multiplicadores regionais atualizados (novembro/2023): Norte 1.8.",
+      "Chunk POL-001-D: Desistência do cliente (carga correta, sem defeito): o custo do frete reverso é do cliente, calculado com os mesmos multiplicadores do frete original.",
+      "Chunk POL-001-B: Cargas perigosas NÃO são elegíveis para devolução pelo processo padrão."
+    ],
+    "resposta_esperada_contem": ["7 dias", "2h", "24h", "1.8", "POL-001", "SLA-2024", "PROC-042"],
+    "resposta_nao_deve_conter": ["Platinum", "acredito que"],
+    "deve_citar_fonte": true,
+    "armadilha": "Pergunta multi-domínio — deve integrar 3 fontes e citar cada uma separadamente"
+  }
+]
